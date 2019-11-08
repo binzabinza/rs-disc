@@ -2,7 +2,7 @@
 #useful for quick testing of scraping scripts
 
 # takes url as command line argument
-# takes filename as command line argument 2 (optional)
+# takes filename as command line argument (optional)
 # saves file in directory the script is run
 
 import requests, argparse
