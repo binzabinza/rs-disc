@@ -16,14 +16,16 @@ class RS_Scraper:
     def __str__(self):
         #prints formatted content scraped from page
         text = ""
-        for timestamp in len(timestamps):
-            text += self.usernames[i] + "\n"
+        for i, timestamp in enumerate(self.timestamps):
+            # text += self.usernames[i] + "\n"
             text += self.bodies[i] + " \n"
-            text += self.usernames[i] +"\n"
-            text += "---"
+            text += timestamp +"\n"
+            text += "---\n"
         return text
 
     def scrape(self, url):
+        #request the webpage and scrape content off of it
+        #TODO: split this into two function in order to allow scrape to work on other IO streams (like local file)
         page = requests.get(url, headers={'content-type' : 'application/json'})
         tree = html.fromstring(page.content)
         for i in range(1,11):
@@ -45,5 +47,8 @@ class RS_Scraper:
 ##########
 # main debugging
 ##########
-
 url = "http://services.runescape.com/m=forum/forums.ws?17,18,812,66119561"
+
+s = RS_Scraper()
+s.scrape(url)
+print(s)
