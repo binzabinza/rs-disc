@@ -27,7 +27,7 @@ class RS_Scraper:
         #     format  :  str   :           :  'url'    : 'url', 'file'
         #
         if (format == 'url'):
-            page = requests.get(url, headers={'content-type' : 'application/json'})
+            page = requests.get(stream, headers={'content-type' : 'application/json'})
             tree = html.fromstring(page.content)
         elif (format == 'file'):
             #TODO: lxml library probably has a way to this
@@ -46,7 +46,7 @@ class RS_Scraper:
         for i in range(1,11): #TODO: find a simple way to determine how many posts are on a page.
             #grab content from html tree using XPath Query
             #TODO: grab usernames
-            usernames_raw = tree.xpath('//h3[@class="post-avatar__name"]/@data-displayname"]') #TODO: not working!
+            #usernames_raw = tree.xpath('//h3[@class="post-avatar__name"]/@data-displayname"]') #TODO: not working!
             post_raw      = tree.xpath(f'//article[{i}]//span[@class="forum-post__body"]//text()')
             timestamp_raw = tree.xpath(f'//article[{i}]//p[@class="forum-post__time-below"]//text()')
 
@@ -79,6 +79,9 @@ class RS_Scraper:
 url = "http://services.runescape.com/m=forum/forums.ws?17,18,812,66119561,goto,{}"
 
 s = RS_Scraper()
-x = s.create_tree('page_content2.html', 'file')
-s.scrape(x)
+
+for i in range(1, 3):
+    x = s.create_tree(url.format(i))
+    s.scrape(x)
+
 print(s)
