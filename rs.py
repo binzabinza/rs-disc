@@ -2,9 +2,8 @@ import requests
 from lxml import html
 
 class RS_Scraper:
-    def __init__(self, n=10):
+    def __init__(self):
         #initialize scraping object
-        self.n          = n  #unused
         self.timestamps = []
         self.bodies     = []
         self.usernames  = []
@@ -13,7 +12,7 @@ class RS_Scraper:
         #prints formatted content scraped from page
         text = ""
         for i, timestamp in enumerate(self.timestamps):
-            # text += self.usernames[i] + "\n"
+            text += self.usernames[i] + "\n"
             text += self.bodies[i] + " \n"
             text += timestamp +"\n"
             text += "---\n"
@@ -43,10 +42,12 @@ class RS_Scraper:
         #     tree    :  lxml.tree   :    yes    :           :
         #
         #This will error for the last page where there are <=10 posts
+
+        usernames_raw = tree.xpath('//a[@class="post-avatar__name-link"]//text()') #TODO: not working
+        usernames = list([x.encode('ascii', 'ignore').decode('ascii') for x in usernames_raw])  # don't touch this it will super fuck usernames up
+        self.usernames += usernames
         for i in range(1,11): #TODO: find a simple way to determine how many posts are on a page.
             #grab content from html tree using XPath Query
-            #TODO: grab usernames
-            #usernames_raw = tree.xpath('//h3[@class="post-avatar__name"]/@data-displayname"]') #TODO: not working!
             post_raw      = tree.xpath(f'//article[{i}]//span[@class="forum-post__body"]//text()')
             timestamp_raw = tree.xpath(f'//article[{i}]//p[@class="forum-post__time-below"]//text()')
 
@@ -80,7 +81,7 @@ url = "http://services.runescape.com/m=forum/forums.ws?17,18,812,66119561,goto,{
 
 s = RS_Scraper()
 
-for i in range(1, 3):
+for i in range(1, 5):
     x = s.create_tree(url.format(i))
     s.scrape(x)
 
