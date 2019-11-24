@@ -1,4 +1,4 @@
-import requests
+import requests, sqlite3
 from lxml import html
 
 class RS_Scraper:
@@ -109,6 +109,10 @@ class RS_Scraper:
     def save_cache(self):
         #TODO: method of saving what has been scraped
         #right now we are simply dumping the object to terminal
+        conn = sqlite3.connect('rs-forum.db')
+        c = conn.cursor()
+
+        conn.exit()
         print(self)
 
     def clear_cache(self):
