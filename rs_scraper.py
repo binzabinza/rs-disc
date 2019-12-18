@@ -1,17 +1,16 @@
 import requests, sqlite3
 from lxml import html
 
-class RS_Scraper:
+class RSScraper:
+
     def __init__(self, thread):
         #initialize scraping object
-        self.thread = thread
-        self.timestamps = []
-        self.bodies     = []
-        self.usernames  = []
+        self.thread = thread  #url of the thread to be scraped
 
-        tmp = self.create_tree(thread) #here2
-        self.current_page = self.get_current_page(tmp)
-        self.max_page     = self.get_max_page(tmp)
+        self.__create_tree__("") #create a tree and set it to current page
+        self.max_page     = self.get_max_page()     #total number of pages in the thread
+        self.current_page = self.get_current_page() #number corresponding to current page
+        self.current_post = 1  #post number on the current page, defaults to 1
 
     def __str__(self):
         #prints formatted content scraped from page
@@ -27,71 +26,78 @@ class RS_Scraper:
             text += "---\n"
         return text
 
-    def create_tree(self, stream, format='url'):
-        #creates a tree object for XPath queries. can be created from an HTML file or a webpage url
-        #
-        #     inputs  :  type  : required  :  default  :  possible values
-        #     stream  :  str   :    yes    :           :
-        #     format  :  str   :           :  'url'    : 'url', 'file'
-        #
-        if (format == 'url'):
-            page = requests.get(stream, headers={'content-type' : 'application/json'})
-            tree = html.fromstring(page.content)
-        elif (format == 'file'):
-            #TODO: lxml library probably has a way to this
-            with open(stream, 'r') as f:
-                page = f.read()
-            tree = html.fromstring(page)
-        return tree
+    def __create_tree__(self, page_num):
+        """
+        creates a tree object for XPath queries and saves it to self.current_tree
+            inputs   :  type  : required  :  default  :  possible values
+            page_num : int    : yes       :           :
+        """
+        page = requests.get(self.thread.format(page_num), headers={'content-type' : 'application/json'})
+        tree = html.fromstring(page.content)
+        self.current_tree = tree
 
-    def scrape(self, tree):
-        #scrape content off of html tree
-        #
-        #     inputs  :     type     : required  :  default  :  possible values
-        #     tree    :  lxml.tree   :    yes    :           :
-        #
+    def scrape_page(self, page_index):
+        """
+        Scrape content off of the page specified by page_index
 
-        self.scrape_usernames(tree)
-        num_posts = self.get_num_posts(tree)
+        Parameters
+        ----------
+        page_index : int
+            The page of the forum thread that should be scraped.
 
+            Returns
+            -------
+            list
+                A list of tuples containing the timestamps, usernames, and bodies of the posts on the requested pages.
+        """
+
+        self.__create_tree__(page_index)
+        usernames = self.scrape_usernames()
+        num_posts = self.get_num_posts()
+
+        timestamps = []
+        bodies     = []
         for i in range(1, num_posts + 1): #1 based indexing because dumb
-            self.scrape_posts(tree, i)
-            self.scrape_timestamps(tree, i)
+            bodies.append(self.scrape_posts(i))
+            timestamps.append(self.scrape_timestamps(i))
+            self.current_post = i
+        
+        return list(zip(timestamps, usernames, bodies))
 
     ################################
     #  This section contains all scraping methods. All XPath querys appear here
     ###############################
-    def get_num_posts(self, tree):
+    def get_num_posts(self):
         #counts the number of posts (article nodes) on a given page
-        cnt = tree.xpath('count(//article)')
+        cnt = self.current_tree.xpath('count(//article)')
         return int(cnt)
 
-    def scrape_usernames(self, tree):
-        usernames_raw = tree.xpath('//a[@class="post-avatar__name-link"]//text()')
+    def scrape_usernames(self):
+        usernames_raw = self.current_tree.xpath('//a[@class="post-avatar__name-link"]//text()')
         usernames = list([x.encode('ascii', 'ignore').decode('ascii') for x in usernames_raw])  # don't touch this it will super fuck usernames up
-        self.usernames += usernames
+        return usernames
 
-    def scrape_posts(self, tree, post_num):
-        post_raw  = tree.xpath(f'//article[{post_num}]//span[@class="forum-post__body"]//text()')
+    def scrape_posts(self, post_num):
+        post_raw  = self.current_tree.xpath(f'//article[{post_num}]//span[@class="forum-post__body"]//text()')
         post_text = "\n".join(post_raw)
-        self.bodies.append(post_text)
+        return post_text
 
-    def scrape_timestamps(self, tree, post_num):
-        timestamp_raw = tree.xpath(f'//article[{post_num}]//p[@class="forum-post__time-below"]//text()')
+    def scrape_timestamps(self, post_num):
+        timestamp_raw = self.current_tree.xpath(f'//article[{post_num}]//p[@class="forum-post__time-below"]//text()')
         timestamp_text = " ".join(timestamp_raw)
-        self.timestamps.append(timestamp_text)
+        return timestamp_text
 
-    def get_max_page(self, tree):
+    def get_max_page(self):
         # Determines the total number of pages on the thread
         # Takes an HTML tree object. Sets and returns the object variable max_page
-        maxp = int(tree.xpath('//a[@class="forum-pagination__top-last"]//text()')[0])
+        maxp = int(self.current_tree.xpath('//a[@class="forum-pagination__top-last"]//text()')[0])
         self.max_page = maxp
         return self.max_page
 
-    def get_current_page(self, tree):
+    def get_current_page(self):
         # Determines the current page number in the thread
         # Takes an HTML object. Sets and retunrs the object variable current_page
-        curp = int(tree.xpath('//li[@class="current"]/a/text()')[0])
+        curp = int(self.current_tree.xpath('//li[@class="current"]/a/text()')[0])
         self.current_page = curp
         return self.current_page
 

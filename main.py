@@ -1,19 +1,18 @@
-from rs_scraper import RS_Scraper
+from forum_service import ForumService
 
 url = "http://services.runescape.com/m=forum/forums.ws?17,18,812,66119561,goto,{}"
 
-s = RS_Scraper(url)
+forum_service = ForumService()
 
-for i in range(29, 30): #1 based indexing because dumb
-    page_tree = s.create_tree(url.format(i))
-    s.scrape(page_tree)
 
-    #s.save_cache()
-    #if i % 40 != 0 : s.clear_cache()
+# threads = forum_service.fetch_active_threads()
+# for thread in threads:
+#     posts       = forum_service.get_price_posts(url, 1, 5)
+#     clean_posts = forum_service.clean_posts(posts)
+#     forum_service.price_reports_db_insert(clean_posts)
+#     forum_service.threads_db_insert(thread_data)
 
-s.check_deleted()
-s.store_last_timestamp(url)
-# print(s)
-print(s.usernames)
-print(s.bodies)
-print(s.timestamps)
+print(forum_service.get_price_posts(url, 1, 5))
+
+# scraper.check_deleted() #NOTE needs to be placed into scraper class
+
