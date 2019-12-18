@@ -130,31 +130,3 @@ class RS_Scraper:
         for i, post in enumerate(self.bodies):
             if post == 'The contents of this message have been hidden':
                 self.usernames.insert(i, None)
-
-##########
-# main debugging
-##########
-url = "http://services.runescape.com/m=forum/forums.ws?17,18,812,66119561,goto,{}"
-
-s = RS_Scraper(url) #erroring here
-
-# !!CURRENT ISSUE !!! 11/20 1:55AM CT
-# The following page:
-#       http://services.runescape.com/m=forum/forums.ws?17,18,812,66119561,goto,29
-# contains a post that has been (deleted|hidden) and as such, no username is associated
-# This needs to be remedied
-#!!!!!
-
-for i in range(29, 30): #1 based indexing because dumb
-    page_tree = s.create_tree(url.format(i))
-    s.scrape(page_tree)
-
-    #s.save_cache()
-    #if i % 40 != 0 : s.clear_cache()
-
-s.check_deleted()
-s.store_last_timestamp(url)
-# print(s)
-print(s.usernames)
-print(s.bodies)
-print(s.timestamps)
