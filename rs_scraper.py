@@ -36,10 +36,10 @@ class RSScraper:
         tree = html.fromstring(page.content)
         self.current_tree = tree
 
-    def scrape_page(self, page_index, post_index=1):
+    def scrape_page(self, page_index, post_index_start=1):
         """
         !!!NOTE: by deaful this method will return the entire page. By passing a page_index, it will return less!!!!
-        
+
         Scrape content off of the page specified by page_index
 
         Parameters
@@ -59,7 +59,10 @@ class RSScraper:
 
         timestamps = []
         bodies     = []
-        for i in range(1, num_posts + 1): #1 based indexing because dumb
+        post_nums  = [x for x in range(post_index_start, num_posts + 1)]
+        page_nums  = [self.current_page] * len(post_nums)
+
+        for i in range(post_index_start, num_posts + 1): #1 based indexing because dumb
             bodies.append(self.scrape_posts(i))
             timestamps.append(self.scrape_timestamps(i))
             self.current_post = i
@@ -68,7 +71,7 @@ class RSScraper:
         for i, post in enumerate(bodies):
             if post == 'The contents of this message have been hidden':
                 usernames.insert(i, None)
-        return list(zip(timestamps, usernames, bodies))
+        return list(zip(timestamps, usernames, bodies, post_nums, page_nums))
 
     ################################
     #  This section contains all scraping methods. All XPath querys appear here
@@ -106,39 +109,3 @@ class RSScraper:
         curp = int(self.current_tree.xpath('//li[@class="current"]/a/text()')[0])
         self.current_page = curp
         return self.current_page
-
-    ###################
-    # Miscellaneous Methods
-    ###################
-    def store_last_timestamp(self, url, filename="last_scraped_post.txt"):
-        # this will save the latest timestamp in the cache to a file
-        last_timestamp = self.timestamps[-1]
-        f = open(filename, 'w')
-        f.write(url)
-        f.write('\n')
-        f.write(str(self.current_page))
-        f.write('\n')
-        f.write(last_timestamp)
-        f.close()
-        return last_timestamp
-
-    def save_cache(self):
-        #TODO: method of saving what has been scraped
-        #right now we are simply dumping the object to terminal
-        conn = sqlite3.connect('rs-forum.db')
-        c = conn.cursor()
-        #INSERT statement here
-        conn.exit()
-        print(self)
-
-    def clear_cache(self):
-        #this will reset the (cache|buffer) object variables
-        self.timestamps = []
-        self.bodies     = []
-        self.usernames  = []
-
-    def check_deleted(self):
-        #checks for deleted posts and inserts None into corresponding usernames list
-        for i, post in enumerate(self.bodies):
-            if post == 'The contents of this message have been hidden':
-                self.usernames.insert(i, None)
