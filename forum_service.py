@@ -1,9 +1,9 @@
 from rs_scraper import RSScraper
 
 class ForumService:
-"""
-    Handles the scraper.
-"""
+    """
+        Handles the scraper.
+    """
     def __init__(self):
         pass
 

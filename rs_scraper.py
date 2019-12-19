@@ -3,12 +3,12 @@ from lxml import html
 
 class RSScraper:
 
-    def __init__(self, thread):
+    def __init__(self, thread_url):
         #initialize scraping object
-        self.thread = thread  #url of the thread to be scraped
+        self.thread_url = thread_url  #url of the thread to be scraped
 
-        self.__create_tree__("") #create a tree and set it to current page
-        self.max_page     = self.get_max_page()     #total number of pages in the thread
+        self.__create_tree__("")
+        self.max_page     = self.get_max_page()
         self.current_page = self.get_current_page() #number corresponding to current page
         self.current_post = 1  #post number on the current page, defaults to 1
 
@@ -32,13 +32,13 @@ class RSScraper:
             inputs   :  type  : required  :  default  :  possible values
             page_num : int    : yes       :           :
         """
-        page = requests.get(self.thread.format(page_num), headers={'content-type' : 'application/json'})
+        page = requests.get(self.thread_url.format(page_num), headers={'content-type' : 'application/json'})
         tree = html.fromstring(page.content)
         self.current_tree = tree
 
     def scrape_page(self, page_index, post_index_start=1):
         """
-        !!!NOTE: by deaful this method will return the entire page. By passing a page_index, it will return less!!!!
+        !!!NOTE: by deafult this method will return the entire page. By passing a post_index_start, it will return less!!!!
 
         Scrape content off of the page specified by page_index
 
@@ -47,10 +47,10 @@ class RSScraper:
         page_index : int
             The page of the forum thread that should be scraped.
 
-            Returns
-            -------
-            list
-                A list of tuples containing the timestamps, usernames, and bodies of the posts on the requested pages.
+        Returns
+        -------
+        list
+            A list of tuples containing the timestamps, usernames, and bodies of the posts on the requested pages.
         """
         self.current_page = page_index
         self.__create_tree__(page_index)
