@@ -36,8 +36,10 @@ class RSScraper:
         tree = html.fromstring(page.content)
         self.current_tree = tree
 
-    def scrape_page(self, page_index):
+    def scrape_page(self, page_index, post_index=1):
         """
+        !!!NOTE: by deaful this method will return the entire page. By passing a page_index, it will return less!!!!
+        
         Scrape content off of the page specified by page_index
 
         Parameters
@@ -50,7 +52,7 @@ class RSScraper:
             list
                 A list of tuples containing the timestamps, usernames, and bodies of the posts on the requested pages.
         """
-
+        self.current_page = page_index
         self.__create_tree__(page_index)
         usernames = self.scrape_usernames()
         num_posts = self.get_num_posts()
@@ -62,6 +64,10 @@ class RSScraper:
             timestamps.append(self.scrape_timestamps(i))
             self.current_post = i
         
+        #check for deleted posts
+        for i, post in enumerate(bodies):
+            if post == 'The contents of this message have been hidden':
+                usernames.insert(i, None)
         return list(zip(timestamps, usernames, bodies))
 
     ################################
