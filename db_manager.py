@@ -26,7 +26,9 @@ class DBManager:
         cursor.close()
 
     def untrack_thread(self, thread_id):
-        """this method will untrack a thread"""
+        """
+        this method will untrack a thread
+        """
         cursor = self.db_connection.cursor()
         cursor.execute('UPDATE threads SET active=0 WHERE thread_id = ?', (thread_id,))
         self.db_connection.commit()
