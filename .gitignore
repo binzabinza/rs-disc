@@ -1,10 +1,14 @@
+# Database Stuff
 sqlite3.exe
+*.db
+
+
+last_scraped_post.txt
 
 *.swp
 *.swo
 
 # Byte-compiled / optimized / DLL files
-**/__pycache__/**
+__pycache__/
 *.py[cod]
 *$py.class
-*.pyc
