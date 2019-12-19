@@ -2,7 +2,6 @@
 sqlite3.exe
 *.db
 
-
 last_scraped_post.txt
 
 *.swp
