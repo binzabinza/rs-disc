@@ -23,8 +23,7 @@ class ForumPostModel:
     scraped_timestamp : str
         the raw timestamp as it was posted
     """
-    #NOTE: it would be nice to pass an array/tuple to a constructor and handle breakdown internally - Would make for more readable code
-    @classmethod
+    
     def __init__(self, thread_id, page_num, post_num, username, post_body, timestamp, edit_timestamp, scraped_timestamp):
         self.thread_id         = thread_id
         self.page_num          = page_num
