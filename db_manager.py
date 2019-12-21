@@ -59,12 +59,12 @@ class DBManager:
         Returns True if inserted, False if it encounters a conflict
         """
         cursor = self.db_connection.cursor()
-        sql_command = "INSERT INTO raw_posts (thread_id, timestamp, username, post_body, post_num, page_num, scraped_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        sql_command = "INSERT INTO forum_posts (thread_id, timestamp, username, post_body, post_num, page_num, scraped_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)"
         try:
             cursor.execute(sql_command, (thread_id, raw_data[0], raw_data[1], raw_data[2], raw_data[3], raw_data[4], str(dt.now())))
         except sqlite3.IntegrityError:
             if (force):
-                cursor.execute('UPDATE raw_posts SET timestamp=?, username=?, post_body=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post[0], post[1], post[2], str(dt.now()), thread_id, post[3], post[4]))
+                cursor.execute('UPDATE forum_posts SET timestamp=?, username=?, post_body=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post[0], post[1], post[2], str(dt.now()), thread_id, post[3], post[4]))
                 print("overwrite post {}.{}.{}".format(thread_id, post[4], post[3]))
             else:
                 print("already scraped post {}.{}.{}".format(thread_id, post[4], post[3]))
@@ -83,10 +83,10 @@ class DBManager:
         cursor = self.db_connection.cursor()
         for post in raw_data:
             try:
-                cursor.execute('INSERT INTO raw_posts (thread_id, timestamp, username, post_body, post_num, page_num, scraped_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)', (thread_id, post[0], post[1], post[2], post[3], post[4], str(dt.now())))
+                cursor.execute('INSERT INTO forum_posts (thread_id, timestamp, username, post_body, post_num, page_num, scraped_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)', (thread_id, post[0], post[1], post[2], post[3], post[4], str(dt.now())))
             except sqlite3.IntegrityError:
                 if (force):
-                    cursor.execute('UPDATE raw_posts SET timestamp=?, username=?, post_body=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post[0], post[1], post[2], str(dt.now()), thread_id, post[3], post[4]))
+                    cursor.execute('UPDATE forum_posts SET timestamp=?, username=?, post_body=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post[0], post[1], post[2], str(dt.now()), thread_id, post[3], post[4]))
                     print("overwrite post {}.{}.{}".format(thread_id, post[4], post[3]))
                 else:
                     print("already scraped post {}.{}.{}".format(thread_id, post[4], post[3]))
