@@ -1,11 +1,12 @@
-from datetime import datetime as dt
 import sqlite3
 
 #NOTE: it may both readability and memory if data is passed to database methods via a dictionary.
 class DBManager:
 
-    def __init__(self, db_name='rs-forum.db'):
+    def __init__(self, db_name='rs-forum.db', display=False):
         self.db_connection = sqlite3.connect(db_name)
+
+        self.display = display #if display is true, db_manager will write information to the terminal
 
     ########################
     # fetch methods (SELECT)
@@ -20,15 +21,14 @@ class DBManager:
         cursor.close()
         return threads
 
-    def fetch_price_reports(self, item_name):
-        """
-        this will fetch all price reports for a specific item. NOTE: This may be to vague to be useful
-        """
+    def fetch_forum_posts(self, thread_id):
+        #we can definitely make this bad boy more powerful
         cursor = self.db_connection.cursor()
-        #cursor.execute('SELECT * FROM price_reports WHERE full_name = ?', (item_name,))
-        cursor.execute('SELECT pr.* FROM price_reports pr, item_lookup il WHERE pr.item_id = il.item_id AND il.short_name = ?', (item_name,))
-        price_reports = cursor.fetchall()
-        return price_reports
+        sql_command = "SELECT * FROM forum_posts WHERE thread_id = ?"
+        cursor.execute(sql_command, (thread_id,))
+        forum_posts = cursor.fetchall()
+        cursor.close()
+        return forum_posts
 
     #########################
     # insert methods (INSERT)
@@ -37,63 +37,53 @@ class DBManager:
         """
             starts tracking a new thread by adding some info to the threads table. When a new thread is tracked, it automatically
             sets the values (last_page_num, last_post_num) to (1,1).
-            Returns True if inserted, False if it encounters a conflict
+            Returns the thread_id
         """
         cursor = self.db_connection.cursor()
+        sql_command = "INSERT INTO threads (url, active, last_page_num, last_post_num) VALUES (?, ?, ?, ?)"
         try:
-            cursor.execute('INSERT INTO threads (url, active, last_page_num, last_post_num) VALUES (?, ?, ?, ?)', (url, 1, 1, 1))
+            cursor.execute(sql_command, (url, 1, 1, 1))
         except sqlite3.IntegrityError:
-            print("already tracked") #NOTE: some better kind of return here?
-            return False
+            if display : print("already tracked")
         else:
             self.db_connection.commit()
+        finally:
+            sql_command = "SELECT thread_id FROM threads WHERE url=?"
+            cursor.execute(sql_command, (url,))
+            thread_id = cursor.fetchone()[0]
+            cursor.close()
+            return thread_id
 
-        cursor.close()
-        return True
-
-    def insert_raw_post(self, raw_data, thread_id, force=False):
+    def insert_forum_post(self, forum_posts, force=False):
         """
-        if force is passed as True, then raw_posts will overwrite any conflicts
-        raw_data should be a list of tuples in format (timestamp, username, post_body)
-        will insert raw post data into the raw_posts table. We should aim to deprecate this
-        Returns True if inserted, False if it encounters a conflict
+        if force is passed as True, then this function will overwrite any database conflicts
+        if display is passed as True, then this function will output information to the terminal
+        forum_posts should either be a single ForumPostModel object, or a list of ForumPostModel objects
+        returns a tuple containing the number of successful insertions and the number of conflicts
         """
         cursor = self.db_connection.cursor()
         sql_command = "INSERT INTO forum_posts (thread_id, timestamp, username, post_body, post_num, page_num, scraped_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        try:
-            cursor.execute(sql_command, (thread_id, raw_data[0], raw_data[1], raw_data[2], raw_data[3], raw_data[4], str(dt.now())))
-        except sqlite3.IntegrityError:
-            if (force):
-                cursor.execute('UPDATE forum_posts SET timestamp=?, username=?, post_body=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post[0], post[1], post[2], str(dt.now()), thread_id, post[3], post[4]))
-                print("overwrite post {}.{}.{}".format(thread_id, post[4], post[3]))
-            else:
-                print("already scraped post {}.{}.{}".format(thread_id, post[4], post[3]))
-        finally:
-            self.db_connection.commit()
-        cursor.close()
-        return True
+        #one quick line handling an input of a single data point
+        if type(forum_posts) != list : forum_posts = [forum_posts]
 
-    def insert_many_raw_posts(self, raw_data, thread_id, force=False):
-        """
-        if force is passed as True, then raw_posts will overwrite any conflicts
-        raw_data should be a list of tuples in format (timestamp, username, post_body)
-        will insert raw post data into the raw_posts table. We should aim to deprecate this
-        Returns True if inserted, False if it encounters a conflict
-        """
-        cursor = self.db_connection.cursor()
-        for post in raw_data:
+        conflict_count = 0
+
+        for post in forum_posts:
             try:
-                cursor.execute('INSERT INTO forum_posts (thread_id, timestamp, username, post_body, post_num, page_num, scraped_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)', (thread_id, post[0], post[1], post[2], post[3], post[4], str(dt.now())))
+                cursor.execute(sql_command, (post.thread_id, post.timestamp, post.username, post.post_body, post.post_num, post.page_num, post.scraped_timestamp))
             except sqlite3.IntegrityError:
+                conflict_count += 1
                 if (force):
-                    cursor.execute('UPDATE forum_posts SET timestamp=?, username=?, post_body=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post[0], post[1], post[2], str(dt.now()), thread_id, post[3], post[4]))
-                    print("overwrite post {}.{}.{}".format(thread_id, post[4], post[3]))
+                    cursor.execute('UPDATE forum_posts SET timestamp=?, username=?, post_body=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post.timestamp, post.username, post.post_body, post.scraped_timestamp, post.thread_id, post.post_num, post.page_num))
+                    if self.display : print("overwrite post {}.{}.{}".format(*post.identifier()))
                 else:
-                    print("already scraped post {}.{}.{}".format(thread_id, post[4], post[3]))
-            finally:
-                self.db_connection.commit()
+                    if self.display : print("already scraped post {}.{}.{}".format(*post.identifier()))
+        
+        self.db_connection.commit()
         cursor.close()
-        return True
+
+        successful = len(forum_posts) - conflict_count
+        return successful, conflict_count
 
     def insert_price_reports(self):
         """

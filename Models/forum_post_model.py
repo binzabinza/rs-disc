@@ -23,7 +23,7 @@ class ForumPostModel:
     scraped_timestamp : str
         the raw timestamp as it was posted
     """
-    
+
     def __init__(self, thread_id, page_num, post_num, username, post_body, timestamp, edit_timestamp, scraped_timestamp):
         self.thread_id         = thread_id
         self.page_num          = page_num
@@ -46,8 +46,14 @@ class ForumPostModel:
     #     elif len(args) == 1:
     #         self.from_array(args[0])
 
+    def identifier(self):
+        """
+            returns the identifying numbers for the post
+        """
+        return (self.thread_id, self.page_num, self.post_num)
 
     def __str__(self):
+        line  = "\n------------------------------------------------------------------\n"
         meta  = "Post #{}.{}.{} - {}\n".format(self.thread_id, self.page_num, self.post_num, self.scraped_timestamp)
         post  = "{}\n\t{}\nPosted: {}, Edited: {}".format(self.username, self.post_body, self.timestamp, self.edit_timestamp)
-        return meta + post
+        return line+ meta + post + line 

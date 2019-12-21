@@ -20,5 +20,14 @@ class PostCleaner:
         """
         takes a raw post body and returns a list of properly formatted price reports
         """
-        cleaned_pb = pb_string
-        return pb_string
+        pass
+
+    def prepare_forum_data(self, data, thread_id, scraped_time):
+        """
+            this will properly order the data for database insertion
+        """
+        for i, post in enumerate(data):
+            p = list(post)
+            time, edit_time = self.clean_timestamp(p[0])
+            data[i] = (thread_id, post[4], post[3], post[1], post[2], time, edit_time, scraped_time)
+        return data
