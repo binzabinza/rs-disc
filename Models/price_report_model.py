@@ -6,7 +6,7 @@ class PriceReportModel:
 
     Attributes
     ----------
-    item_id : int
+    item_id : int 
         a unique id for the item reported
     transaction_type : str
         a str defining the transaction type of the price report (one of: "nib", "nis", "inb", "ins")
@@ -29,3 +29,13 @@ class PriceReportModel:
         self.thread_id = thread_id
         self.page_id = page_id
         self.post_id = post_id
+
+    @classmethod
+    def from_array(cls, data):
+        obj = cls(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
+        return obj
+    
+    def __str__(self):
+        meta  = "Post #{}.{}.{}".format(self.thread_id, self.page_id, self.post_id)
+        report  = "{} {}  - {}".format(self.transaction_type, self.price, self.time)
+        return report + "\n" + meta
