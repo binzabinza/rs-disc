@@ -14,8 +14,8 @@ active_threads = db.fetch_active_threads()
 fs = ForumService()
 
 for url, last_page, last_post, thread_id in active_threads:
-   data, last_page, last_post = fs.get_raw_posts(url, last_page)
-   db.insert_raw_posts(data, thread_id)
+   data, last_page, last_post = fs.get_raw_posts(url, 1, 3)
+   db.insert_many_raw_posts(data, thread_id)
    db.update_tracked_threads(thread_id, last_page, last_post)
 
 
