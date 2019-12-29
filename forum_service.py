@@ -7,28 +7,26 @@ class ForumService:
         Handles the scraping calls and cleaning data
     """
 
-    def get_clean_forum_posts(self, url, thread_id, page_start, page_end=''):
+    def get_forum_posts(self, url, thread_id, page_start, page_end=''):
         """
             Takes a url, thread_id, page_start, and optionally, a page_end
-            it will return a list of tuples containing properly formatted forum post information
-            for the specified page range
+            it will return a list of ForumPostModel objects containing properly formatted forum post information
+            for the specified page range. defaults to last page if a specific page is not specified
         """
-        #defaults to last page if a specific page is not specified
         if (page_end == '') : page_end = RSScraper(url).get_max_page() + 1 #NOTE: is this bad practice??
         result = []
         for page_index in range(page_start, page_end):
-            result += (self.get_clean_forum_post(url, thread_id, page_index))
+            result += (self.get_forum_post(url, thread_id, page_index))
         return result
 
-    def get_clean_forum_post(self, url, thread_id, page_num):
+    def get_forum_post(self, url, thread_id, page_num):
         """
             Takes a url, thread_id, and a page_num
-            it will return a list of tuples containing properly formatted forum post information
+            it will return a list of ForumPostModel objects containing properly formatted forum post information
             for a single page
         """
         forum_data, scraped_time = self.__get_raw_forum_post__(url, page_num)
-        pc = PostCleaner()
-        clean_forum_data = pc.prepare_forum_data(forum_data, thread_id, scraped_time)
+        clean_forum_data = PostCleaner.prepare_forum_data(forum_data, thread_id, scraped_time)
         return clean_forum_data
     
     def __get_raw_forum_post__(self, url, page_num):
@@ -45,7 +43,7 @@ class ForumService:
         #TODO: implement the creating/cleaning of price reports
         pass
 
-    def get_clean_posts_and_reports(self):
+    def get_posts_and_reports(self):
         #TODO: roll get_price_reports and get_clean_forum_posts into a single function
         #return clean_forum_posts, price_reports
         pass

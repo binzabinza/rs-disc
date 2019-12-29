@@ -56,4 +56,4 @@ class ForumPostModel:
         line  = "\n------------------------------------------------------------------\n"
         meta  = "Post #{}.{}.{} - {}\n".format(self.thread_id, self.page_num, self.post_num, self.scraped_timestamp)
         post  = "{}\n\t{}\nPosted: {}, Edited: {}".format(self.username, self.post_body, self.timestamp, self.edit_timestamp)
-        return line+ meta + post + line 
+        return line + meta + post + line 

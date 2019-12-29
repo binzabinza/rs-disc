@@ -3,10 +3,10 @@ import sqlite3
 #NOTE: it may both readability and memory if data is passed to database methods via a dictionary.
 class DBManager:
 
-    def __init__(self, db_name='rs-forum.db', display=False):
+    def __init__(self, db_name='rs-forum.db', debugging=False):
         self.db_connection = sqlite3.connect(db_name)
 
-        self.display = display #if display is true, db_manager will write information to the terminal
+        self.debugging = debugging #if debugging is true, db_manager will write information to the terminal
 
     ########################
     # fetch methods (SELECT)
@@ -22,7 +22,9 @@ class DBManager:
         return threads
 
     def fetch_forum_posts(self, thread_id):
-        #we can definitely make this bad boy more powerful
+        """
+            returns a list of tuples
+        """
         cursor = self.db_connection.cursor()
         sql_command = "SELECT * FROM forum_posts WHERE thread_id = ?"
         cursor.execute(sql_command, (thread_id,))
@@ -44,7 +46,7 @@ class DBManager:
         try:
             cursor.execute(sql_command, (url, 1, 1, 1))
         except sqlite3.IntegrityError:
-            if display : print("already tracked")
+            if self.debugging : print("already tracked")
         else:
             self.db_connection.commit()
         finally:
@@ -57,12 +59,11 @@ class DBManager:
     def insert_forum_post(self, forum_posts, force=False):
         """
         if force is passed as True, then this function will overwrite any database conflicts
-        if display is passed as True, then this function will output information to the terminal
         forum_posts should either be a single ForumPostModel object, or a list of ForumPostModel objects
         returns a tuple containing the number of successful insertions and the number of conflicts
         """
         cursor = self.db_connection.cursor()
-        sql_command = "INSERT INTO forum_posts (thread_id, timestamp, username, post_body, post_num, page_num, scraped_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        sql_command = "INSERT INTO forum_posts (thread_id, timestamp, username, post_body, post_num, page_num, edit_timestamp, scraped_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         #one quick line handling an input of a single data point
         if type(forum_posts) != list : forum_posts = [forum_posts]
 
@@ -70,14 +71,14 @@ class DBManager:
 
         for post in forum_posts:
             try:
-                cursor.execute(sql_command, (post.thread_id, post.timestamp, post.username, post.post_body, post.post_num, post.page_num, post.scraped_timestamp))
+                cursor.execute(sql_command, (post.thread_id, post.timestamp, post.username, post.post_body, post.post_num, post.page_num, post.edit_timestamp, post.scraped_timestamp))
             except sqlite3.IntegrityError:
                 conflict_count += 1
                 if (force):
-                    cursor.execute('UPDATE forum_posts SET timestamp=?, username=?, post_body=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post.timestamp, post.username, post.post_body, post.scraped_timestamp, post.thread_id, post.post_num, post.page_num))
-                    if self.display : print("overwrite post {}.{}.{}".format(*post.identifier()))
+                    cursor.execute('UPDATE forum_posts SET timestamp=?, username=?, post_body=?, edit_timestamp=?, scraped_timestamp=? WHERE thread_id=? AND post_num=? AND page_num=?', (post.timestamp, post.username, post.post_body, post.edit_timestamp, post.scraped_timestamp, post.thread_id, post.post_num, post.page_num))
+                    if self.debugging : print("overwrite post {}.{}.{}".format(*post.identifier()))
                 else:
-                    if self.display : print("already scraped post {}.{}.{}".format(*post.identifier()))
+                    if self.debugging : print("already scraped post {}.{}.{}".format(*post.identifier()))
         
         self.db_connection.commit()
         cursor.close()
