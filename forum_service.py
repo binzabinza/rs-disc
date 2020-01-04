@@ -7,13 +7,13 @@ class ForumService:
         Handles the scraping calls and cleaning data
     """
 
-    def get_forum_posts(self, url, thread_id, page_start, page_end=''):
+    def get_forum_posts(self, url, thread_id, page_start, page_end=0):
         """
             Takes a url, thread_id, page_start, and optionally, a page_end
             it will return a list of ForumPostModel objects containing properly formatted forum post information
             for the specified page range. defaults to last page if a specific page is not specified
         """
-        if (page_end == '') : page_end = RSScraper(url).get_max_page() + 1 #NOTE: is this bad practice??
+        if (not page_end) : page_end = RSScraper(url).get_max_page() + 1 #NOTE: is this bad practice??
         result = []
         for page_index in range(page_start, page_end):
             result += (self.get_forum_post(url, thread_id, page_index))
