@@ -1,4 +1,4 @@
-import requests, sqlite3
+import requests
 from lxml import html
 
 class RSScraper:

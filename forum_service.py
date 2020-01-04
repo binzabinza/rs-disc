@@ -1,40 +1,49 @@
 from rs_scraper import RSScraper
+from post_cleaner import PostCleaner
+from datetime import datetime as dt
 
 class ForumService:
     """
-        Handles the scraper.
+        Handles the scraping calls and cleaning data
     """
-    def __init__(self):
+
+    def get_forum_posts(self, url, thread_id, page_start, page_end=0):
+        """
+            Takes a url, thread_id, page_start, and optionally, a page_end
+            it will return a list of ForumPostModel objects containing properly formatted forum post information
+            for the specified page range. defaults to last page if a specific page is not specified
+        """
+        if (not page_end) : page_end = RSScraper(url).get_max_page() + 1 #NOTE: is this bad practice??
+        result = []
+        for page_index in range(page_start, page_end):
+            result += (self.get_forum_post(url, thread_id, page_index))
+        return result
+
+    def get_forum_post(self, url, thread_id, page_num):
+        """
+            Takes a url, thread_id, and a page_num
+            it will return a list of ForumPostModel objects containing properly formatted forum post information
+            for a single page
+        """
+        forum_data, scraped_time = self.__get_raw_forum_post__(url, page_num)
+        clean_forum_data = PostCleaner.prepare_forum_data(forum_data, thread_id, scraped_time)
+        return clean_forum_data
+    
+    def __get_raw_forum_post__(self, url, page_num):
+        """
+            Takes a url and a page_num
+            returns a list of uncleaned forum post information and the time it was executed (scraped_time)
+        """
+        scraper = RSScraper(url)
+        forum_data = scraper.scrape_page(page_num)
+        scraped_time = str(dt.now())
+        return forum_data, scraped_time
+
+    def get_price_reports(self):
+        #TODO: implement the creating/cleaning of price reports
         pass
 
-    ##################
-    # Scraping Methods
-    ##################
-    def get_raw_posts(self, url, page_start, page_end=''):
-        scraper = RSScraper(url)
-        if (page_end == '') : page_end = scraper.max_page #defaults to last page if a specific page is not specified
-        raw_posts = []
-        for i in range(page_start, page_end):
-            raw_posts += scraper.scrape_page(i)
-        return raw_posts, scraper.current_page, scraper.current_post
-        
-
-
-
-    def get_all_price_posts(self, url):
-        scraper = RSScraper(url)
-        max_page = scraper.max_page
-        return self.__get_price_posts__(url, 1, max_page)
-
-    def get_price_posts(self, url, page_start, page_end):
-        scraper = RSScraper(url)
-        return self.__get_price_posts__(scraper, page_start, page_end)
-
-    def __get_price_posts__(self, scraper, page_start, page_end):
-        price_posts = []
-        for i in range(page_start, page_end):
-            price_posts += scraper.scrape_page(i)
-
-        return price_posts
-
-        # NOTE: this is where we clean/parse/save the post data
+    def get_posts_and_reports(self):
+        #TODO: roll get_price_reports and get_clean_forum_posts into a single function
+        #return clean_forum_posts, price_reports
+        pass
