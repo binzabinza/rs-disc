@@ -1,5 +1,4 @@
 #script to create a sqlite3 database for the rs-disc project
-#TODO: this would be a super convenient script to create a general version of
 
 import sqlite3, argparse
 
