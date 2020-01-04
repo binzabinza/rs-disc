@@ -1,7 +1,7 @@
 # rs-disc
 
 ## Database Information
-sqlite3           : 2.6.0  
+sqlite3           : 2.6.0
 database filename : rs-forum.db
 
 ### Table Schemas
