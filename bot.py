@@ -39,4 +39,4 @@ def parse(string):
     args = string.split()[1:]
     return command, args
 #############
-client.run('NjkyODQ5NjU3NDExNDAzNzk2.Xn1PXg.iLACSb0mqtB064S0F0tE3tCIfz8')
+client.run('')
