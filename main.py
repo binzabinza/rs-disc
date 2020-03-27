@@ -8,9 +8,9 @@ fs = ForumService()
 
 #track new threads
 url1 = "http://services.runescape.com/m=forum/forums.ws?17,18,812,66119561,goto,{}"
-#url2 = "https://services.runescape.com/m=forum/sl=0/forums?17,18,769,66133050,goto,{}"
+url2 = "https://services.runescape.com/m=forum/sl=0/forums?17,18,769,66133050,goto,{}"
 db.track_new_thread(url1)
-#db.track_new_thread(url2)
+db.track_new_thread(url2)
 
 #lets try pulling down all the info in both threads
 active_threads = db.fetch_active_threads()

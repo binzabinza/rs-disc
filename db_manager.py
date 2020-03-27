@@ -21,16 +21,28 @@ class DBManager:
         cursor.close()
         return threads
 
-    def fetch_forum_posts(self, thread_id):
+    def fetch_forum_posts(self, thread_id, quant=1):
         """
             returns a list of tuples
         """
         cursor = self.db_connection.cursor()
-        sql_command = "SELECT * FROM forum_posts WHERE thread_id = ?"
-        cursor.execute(sql_command, (thread_id,))
+        #sql_command = "SELECT * FROM forum_posts WHERE thread_id = ?"
+        sql_command = "SELECT * FROM forum_posts WHERE thread_id=? ORDER BY thread_id DESC, page_num DESC, post_num DESC LIMIT ?;"
+        cursor.execute(sql_command, (thread_id, quant))
         forum_posts = cursor.fetchall()
         cursor.close()
         return forum_posts
+
+    def generate_link(self, thread_id, page_num, post_num):
+        cursor = self.db_connection.cursor()
+        sql_command = "SELECT url FROM threads WHERE thread_id=?;"
+        cursor.execute(sql_command, (thread_id,))
+        base_url = cursor.fetchone()[0]
+        base_url = base_url.format(page_num)
+        total_post_number = post_num-1 + (page_num - 1)*10 #we can jump to a post by calculating this value
+        final_url = base_url + f"#{total_post_number}"
+        cursor.close()
+        return final_url
 
     #########################
     # insert methods (INSERT)
