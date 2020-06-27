@@ -1,4 +1,6 @@
 from Models.forum_post_model import ForumPostModel
+import re
+
 class PostCleaner:
 
     @staticmethod
@@ -16,11 +18,15 @@ class PostCleaner:
             return cleaned_original_ts, None
 
     @staticmethod
-    def clean_post(pb_string):
+    def clean_post(post_body):
         """
         takes a raw post body and returns a list of properly formatted price reports
         """
-        pass
+        post_body = post_body.lower()
+
+        report_pattern = '(nib|nis|inb|ins) (.*) (\d+)([a-z]*)'
+
+        return re.findall(report_pattern, post_body)
 
     @classmethod
     def prepare_forum_data(cls, data, thread_id, scraped_time):
