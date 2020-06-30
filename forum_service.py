@@ -39,9 +39,12 @@ class ForumService:
         scraped_time = str(dt.now())
         return forum_data, scraped_time
 
-    def get_price_reports(self):
-        #TODO: implement the creating/cleaning of price reports
-        pass
+    def get_price_reports(self, data):
+        price_reports = []
+        for d in data:
+            reps = PostCleaner.clean_post(d.post_body)
+            price_reports += reps
+        return price_reports
 
     def get_posts_and_reports(self):
         #TODO: roll get_price_reports and get_clean_forum_posts into a single function
