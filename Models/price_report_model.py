@@ -6,7 +6,7 @@ class PriceReportModel:
 
     Attributes
     ----------
-    item_id : int 
+    item_id : string 
         a unique id for the item reported
     transaction_type : str
         a str defining the transaction type of the price report (one of: "nib", "nis", "inb", "ins")

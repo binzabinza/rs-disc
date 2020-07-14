@@ -1,10 +1,12 @@
+from typing import List
 from Models.forum_post_model import ForumPostModel
+from Models.price_report_model import PriceReportModel
 import re
 
 class PostCleaner:
 
     @staticmethod
-    def clean_timestamp(ts_string):
+    def extract_timestamp(ts_string):
         """
         will return two timestamps as strings. The first is the timestamp of the original post. The second,
         if it exists, will be the timestamp of the edit otherwise NoneType
@@ -18,27 +20,56 @@ class PostCleaner:
             return cleaned_original_ts, None
 
     @staticmethod
-    def clean_post(post_body):
+    def extract_price_reports(post: ForumPostModel) -> List[PriceReportModel]:
         """
-        takes a raw post body and returns a list of properly formatted price reports
+        takes a post and returns a list of properly formatted price reports found in the post's body
         """
-        post_body = post_body.lower()
+        post_body = post.post_body.lower()
 
         report_pattern = '(nib|nis|inb|ins) (.*) (\d+)([a-z]*)'
+        raw_reports = re.findall(report_pattern, post_body)
 
-        return re.findall(report_pattern, post_body)
+        return [
+            PriceReportModel(
+                r[1], r[0], r[2], 
+                post.timestamp, 
+                post.thread_id,
+                post.page_num,
+                post.post_num
+            )
+            for r in raw_reports
+        ]
 
     @classmethod
-    def prepare_forum_data(cls, data, thread_id, scraped_time):
+    def prepare_forum_data(cls, raw_posts, thread_id, scraped_time):
         """
-        takes raw forum data (list of tuples) and cleans it.
+        takes raw forum posts (list of tuples) and cleans it.
         
         Returns
         --------
-        list
-            a list of `ForumPostModel` objects.
+        List[ForumPostModel]
+            A list of `ForumPostModel` objects.
         """
-        for i, post in enumerate(data):
-            time, edit_time = cls.clean_timestamp(post[0])
-            data[i] = ForumPostModel(thread_id, post[4], post[3], post[1], post[2], time, edit_time, scraped_time)
-        return data
+
+        posts = []
+        for p in raw_posts:
+            timestamp, edit_timestamp = cls.extract_timestamp(p[0])
+            posts.append(ForumPostModel(
+                thread_id,
+                p[4], p[3], p[1], p[2],
+                timestamp,
+                edit_timestamp,
+                scraped_time
+            ))
+
+#        posts = [
+#            ForumPostModel(
+#                thread_id,
+#                p[4], p[3], p[1], p[2],
+#                cls.extract_timestamp(p[0]),
+#                scraped_time
+#            )
+#            for p in raw_posts
+#        ]
+
+        return posts
