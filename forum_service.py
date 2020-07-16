@@ -5,6 +5,8 @@ from typing import List, Tuple
 from Models.forum_post_model import ForumPostModel
 from Models.price_report_model import PriceReportModel
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 class ForumService:
     """
         Handles the scraping calls and cleaning data
@@ -27,14 +29,18 @@ class ForumService:
         """
         if (not page_end) : page_end = RSScraper(self.url).get_max_page() + 1 #NOTE: is this bad practice??
 
+        processes = []
+        with ThreadPoolExecutor(max_workers=48) as executor:
+            for page_index in range(page_start, page_end):
+                processes.append(executor.submit(self.get_forum_posts_on_page, thread_id, page_index))
+
         posts = []
-        for page_index in range(page_start, page_end):
-            posts += (self.get_forum_posts_on_page(thread_id, page_index))
+        for process in as_completed(processes):
+            posts += process.result()
 
         price_reports = []
         for post in posts:
             price_reports += PostCleaner.extract_price_reports(post = post)
-            
 
         return (posts, price_reports)
 
