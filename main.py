@@ -2,6 +2,8 @@ from forum_service import ForumService
 from db_manager import DBManager
 from Models.forum_post_model import ForumPostModel
 
+from time import time
+
 #initialize our classes
 db = DBManager(debugging=True)
 
@@ -18,8 +20,14 @@ active_threads = db.fetch_active_threads()
 total_reports = []
 for url, last_page_num, last_post_num, thread_id in active_threads:
     forum_service = ForumService(url)
-    #posts = forum_service.get_forum_posts(url, thread_id, 1)
+
+    print(f'fetching posts from forum -- {thread_id}\n  url: {url}')
+
+    start = time()
     posts, price_reports = forum_service.get_forum_posts_and_reports(thread_id, 1)
+    print(f'posts: {len(posts)}, price reports: {len(price_reports)}')
+    print(f'runtime: {time() - start}\n')
+
 
     #let's try inserting each post
     #print(db.insert_forum_post(data))
