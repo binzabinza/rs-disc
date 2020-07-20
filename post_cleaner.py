@@ -26,7 +26,7 @@ class PostCleaner:
         """
         post_body = post.post_body.lower()
 
-        report_pattern = '(nib|nis|inb|ins) (.*) (\d+)([a-z]*)'
+        report_pattern = r'(nib|nis|inb|ins) (.*) (\d+)([a-z]*)'
         raw_reports = re.findall(report_pattern, post_body)
 
         return [
