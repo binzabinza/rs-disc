@@ -5,7 +5,7 @@ from typing import List, Tuple
 from Models.forum_post_model import ForumPostModel
 from Models.price_report_model import PriceReportModel
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 
 class ForumService:
     """
@@ -29,14 +29,23 @@ class ForumService:
         """
         if (not page_end) : page_end = RSScraper(self.url).get_max_page() + 1 #NOTE: is this bad practice??
 
-        processes = []
-        with ThreadPoolExecutor(max_workers=48) as executor:
-            for page_index in range(page_start, page_end):
-                processes.append(executor.submit(self.get_forum_posts_on_page, thread_id, page_index))
-
         posts = []
-        for process in as_completed(processes):
-            posts += process.result()
+        with ThreadPoolExecutor(max_workers=24) as executor:
+            processes = {
+                executor.submit(self.get_forum_posts_on_page, thread_id, page_number) : page_number
+                for page_number in range(page_start, page_end)
+            }
+
+            for process in as_completed(processes):
+                page_number = processes[process]
+                try:
+                    page = process.result()
+                except Exception as exc:
+                    print('exception occurred while trying to get posts on page %d: %s' % (page_number, exc))
+                else:
+                    print('got %d posts from page %d' % (len(page), page_number))
+                    posts += page
+
 
         price_reports = []
         for post in posts:
