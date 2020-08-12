@@ -1,7 +1,9 @@
 from typing import List
+import re
+
 from Models.forum_post_model import ForumPostModel
 from Models.price_report_model import PriceReportModel
-import re
+from Items.items import all_items
 
 class PostCleaner:
 
@@ -29,16 +31,50 @@ class PostCleaner:
         report_pattern = r'(nib|nis|inb|ins) (.*) (\d+)([a-z]*)'
         raw_reports = re.findall(report_pattern, post_body)
 
-        return [
-            PriceReportModel(
-                r[1], r[0], r[2], 
-                post.timestamp, 
-                post.thread_id,
-                post.page_num,
-                post.post_num
+        reports = []
+        for raw_report in raw_reports:
+            item_id = PostCleaner.__find_item_id(raw_report[1])
+            if item_id == '': continue
+
+            reports.append(
+                PriceReportModel(
+                    item_id,
+                    raw_report[0],
+                    raw_report[2],
+                    post.timestamp,
+                    post.thread_id,
+                    post.page_num,
+                    post.post_num
+                )
             )
-            for r in raw_reports
-        ]
+
+        return reports
+
+    @staticmethod
+    def __find_item_id(raw_str: str) -> str:
+        """
+        takes a str that might contain an item name and does a fuzzy search for
+        a substring matching any of the items listed in Items.py
+
+        Parameters
+        ----------
+        raw_str : str
+            The raw string that may contain an items name.
+
+        Returns
+        -------
+        str
+            Either the item id or empty string if no match was found.
+        """
+
+        for key in all_items.keys():
+            if key in raw_str:
+                return all_items[key]
+        
+        # no match found, return empty string
+        print(f'ERROR: No item id found for raw string: {raw_str}')
+        return ''
+
 
     @classmethod
     def prepare_forum_data(cls, raw_posts, thread_id, scraped_time):
@@ -46,7 +82,7 @@ class PostCleaner:
         takes raw forum posts (list of tuples) and cleans it.
         
         Returns
-        --------
+        -------
         List[ForumPostModel]
             A list of `ForumPostModel` objects.
         """

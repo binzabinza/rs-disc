@@ -445,3 +445,5 @@ tokens = {
     #
     "sand dunk rest": "sand dunk rest"
 }
+
+all_items = tokens

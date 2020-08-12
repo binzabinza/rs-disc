@@ -7,6 +7,8 @@ from Models.price_report_model import PriceReportModel
 
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 
+from time import time
+
 class ForumService:
     """
         Handles the scraping calls and cleaning data
@@ -32,7 +34,7 @@ class ForumService:
         scraped_time = str(dt.now())
 
         posts = []
-        with ThreadPoolExecutor(max_workers=24) as executor:
+        with ThreadPoolExecutor(max_workers=12) as executor:
             processes = {
                 executor.submit(self.scraper.scrape_page, page_number) : page_number
                 for page_number in range(page_start, page_end)
@@ -43,12 +45,11 @@ class ForumService:
                 try:
                     raw_posts = process.result()
                 except Exception as exc:
-                    print('exception occurred while trying to get posts on page %d: %s' % (page_number, exc))
+                    print(f'exception occurred while trying to get posts on page {page_number}: {exc}')
                 else:
                     posts_on_page = PostCleaner.prepare_forum_data(raw_posts, thread_id, scraped_time)
-                    print('got %d posts from page %d' % (len(posts_on_page), page_number))
+                    print(f'got {len(posts_on_page)} posts from page {page_number}')
                     posts += posts_on_page
-
 
         price_reports = []
         for post in posts:
@@ -56,29 +57,6 @@ class ForumService:
 
         return (posts, price_reports)
 
-    def get_forum_posts_on_page(self,
-            thread_id: str, 
-            page_num: int
-        ) -> List[ForumPostModel]:
-        """
-        Gets the forum posts found on a specified page number.
-
-        Parameters
-        ----------
-        thread_id : str
-            A unique ID for the thread this `ForumService` object is responsible for.
-
-        Returns
-        -------
-        List[ForumPostModel]
-            A list of `ForumPostModel` objects.
-        """
-
-        raw_posts = self.scraper.scrape_page(page_num)
-        scraped_time = str(dt.now())
-
-        return PostCleaner.prepare_forum_data(raw_posts, thread_id, scraped_time)
-    
     def __get_raw_forum_post__(self, url, page_num):
         """
             Takes a url and a page_num
@@ -88,16 +66,3 @@ class ForumService:
         print(forum_data)
         scraped_time = str(dt.now())
         return forum_data, scraped_time
-
-    def get_price_reports(self, data):
-        price_reports = []
-        for d in data:
-            reps = PostCleaner.clean_post(d.post_body)
-            price_reports += reps
-            print(reps)
-        return price_reports
-
-    def get_posts_and_reports(self):
-        #TODO: roll get_price_reports and get_clean_forum_posts into a single function
-        #return clean_forum_posts, price_reports
-        pass
