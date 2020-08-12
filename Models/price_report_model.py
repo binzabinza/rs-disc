@@ -7,21 +7,30 @@ class PriceReportModel:
     Attributes
     ----------
     item_id : string 
-        a unique id for the item reported
+        A unique id for the item reported (the name of the item).
     transaction_type : str
-        a str defining the transaction type of the price report (one of: "nib", "nis", "inb", "ins")
+        A str defining the transaction type of the price report (one of: "nib", "nis", "inb", "ins")
     price : int
-        the price that was reported
+        The price that was reported
     time : str
-        the timestamp of the post which contains this price report
+        The timestamp of the post which contains this price report
     thread_id : int
     page_id : int
-        page number in the thread of the post which contains this price report
+        Page number in the thread of the post which contains this price report
     post_id : int
-        the position of the post on the page
+        The position of the post on the page
     """
     
-    def __init__(self, item_id, transaction_type, price, time, thread_id, page_id, post_id):
+    def __init__(
+        self,
+        item_id: str,
+        transaction_type: str,
+        price: int,
+        time: str,
+        thread_id: int,
+        page_id: int,
+        post_id: int
+    ):
         self.item_id = item_id
         self.transaction_type = transaction_type
         self.price = price

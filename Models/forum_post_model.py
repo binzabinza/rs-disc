@@ -24,14 +24,24 @@ class ForumPostModel:
         the raw timestamp as it was posted
     """
 
-    def __init__(self, thread_id, page_num, post_num, username, post_body, timestamp, edit_timestamp, scraped_timestamp):
-        self.thread_id         = thread_id
-        self.page_num          = page_num
-        self.post_num          = post_num
-        self.username          = username
-        self.post_body         = post_body
-        self.timestamp         = timestamp
-        self.edit_timestamp    = edit_timestamp
+    def __init__(
+        self,
+        thread_id: int,
+        page_num: int,
+        post_num: int,
+        username: str,
+        post_body: str,
+        timestamp: str,
+        edit_timestamp: str,
+        scraped_timestamp: str
+    ):
+        self.thread_id = thread_id
+        self.page_num = page_num
+        self.post_num = post_num
+        self.username = username
+        self.post_body = post_body
+        self.timestamp = timestamp
+        self.edit_timestamp = edit_timestamp
         self.scraped_timestamp = scraped_timestamp
     
     @classmethod
