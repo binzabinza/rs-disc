@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import Any
+
 class ForumPostModel:
     """
     A model that contains info about a forum post.
@@ -45,7 +48,7 @@ class ForumPostModel:
         self.scraped_timestamp = scraped_timestamp
     
     @classmethod
-    def from_array(cls, data):
+    def from_array(cls, data: Any) -> ForumPostModel:
         obj = cls(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7])
         return obj
     

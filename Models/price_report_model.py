@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import Any
+
 class PriceReportModel:
     """
     A model that contains info about a price report.
@@ -40,7 +43,7 @@ class PriceReportModel:
         self.post_id = post_id
 
     @classmethod
-    def from_array(cls, data):
+    def from_array(cls, data: Any) -> PriceReportModel:
         obj = cls(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
         return obj
     
