@@ -33,6 +33,7 @@ class RSScraper:
             will recurse to retry the http request if it fails initially.
             Defaults to 10.
         """
+
         if tries_left <= 0:
             print(f'ERROR: Failed to create tree for html on page {page_num}')
             return None
@@ -48,33 +49,45 @@ class RSScraper:
 
         return html.fromstring(response.content)
 
-    def scrape_page(self, page_index: int, post_index_start: int = 1) -> List[Tuple[str, str, str, int, int]]:
+    def scrape_page(self, page_num: int, post_index_start: int = 1, tries_left: int = 10) -> List[Tuple[str, str, str, int, int]]:
         """
-        Scrape content off of the page specified by page_index.
+        Scrape content off of the page specified by page_num.
 
         NOTE: by default this method will return the entire page. By passing a post_index_start, it will return less!!!
 
         Parameters
         ----------
-        page_index : int
+        page_num : int
             The page of the forum thread that should be scraped.
 
         post_index_start : int
-            The index of the first post on the page to start scraping from (1-indexed). Defaults to first post on page.
+            The index of the first post on the page to start scraping from
+            (1-indexed). Defaults to first post on page.
+
+        tries_left : int
+            The number of tries remaining. This is the number of times the method
+            will recurse to retry scraping the page if it fails initially.
+            Defaults to 10.
+
 
         Returns
         -------
         list
             A list of tuples containing the timestamps, usernames, and bodies of the posts on the requested pages.
         """
-        tree = self.__create_tree(page_index)
+
+        if tries_left <= 0:
+            print('ERROR: Failed to scrape page {page_num}.')
+            return None
+
+        tree = self.__create_tree(page_num)
         usernames = self.__scrape_usernames(tree)
         num_posts = self.__get_num_posts(tree)
 
         timestamps = []
         bodies     = []
         post_nums  = [x for x in range(post_index_start, num_posts + 1)]
-        page_nums  = [page_index] * len(post_nums)
+        page_nums  = [page_num] * len(post_nums)
 
         for i in range(post_index_start, num_posts + 1): #1 based indexing because dumb
             bodies.append(self.__scrape_posts(i, tree))
@@ -84,7 +97,12 @@ class RSScraper:
         for i, post in enumerate(bodies):
             if post == 'The contents of this message have been hidden':
                 usernames.insert(i, None)
-        return list(zip(timestamps, usernames, bodies, post_nums, page_nums))
+
+        raw_posts =  list(zip(timestamps, usernames, bodies, post_nums, page_nums))
+        if len(raw_posts) != num_posts:
+            return self.scrape_page(page_num, post_index_start, tries_left=tries_left-1)
+
+        return raw_posts
 
     ################################
     #  This section contains all scraping methods. All XPath querys appear here
