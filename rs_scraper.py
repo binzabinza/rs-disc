@@ -2,6 +2,8 @@ import requests
 from lxml import html
 from typing import List, Tuple
 
+import time
+
 class RSScraper:
     """
         Handles interaction with the forum and parsing html.
@@ -18,7 +20,7 @@ class RSScraper:
         """
         self.thread_url = thread_url  #url of the thread to be scraped
 
-    def __create_tree(self, page_num: int):
+    def __create_tree(self, page_num: int, tries_left: int = 10):
         """
         Creates a tree object for XPath queries and saves it to self.current_tree.
 
@@ -26,9 +28,25 @@ class RSScraper:
         ----------
         page_num : int
             The page of the forum thread to create the tree for.
+        tries_left : int
+            The number of tries remaining. This is the number of times the method
+            will recurse to retry the http request if it fails initially.
+            Defaults to 10.
         """
-        page = requests.get(self.thread_url.format(page_num), headers={'content-type' : 'application/json'})
-        return html.fromstring(page.content)
+        if tries_left <= 0:
+            print(f'ERROR: Failed to create tree for html on page {page_num}')
+            return None
+
+        response = requests.get(
+            self.thread_url.format(page_num),
+            headers={'content-type' : 'application/json'}
+        )
+
+        if response.status_code != 200:
+            time.sleep(0.25)
+            self.__create_tree(page_num, tries_left=tries_left-1)
+
+        return html.fromstring(response.content)
 
     def scrape_page(self, page_index: int, post_index_start: int = 1) -> List[Tuple[str, str, str, int, int]]:
         """

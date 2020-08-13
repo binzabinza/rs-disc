@@ -26,7 +26,7 @@ for url, last_page_num, last_post_num, thread_id in active_threads:
 
     start = time()
     #posts, price_reports = forum_service.get_forum_posts_and_reports(thread_id, 1, 60)
-    posts, price_reports = forum_service.get_forum_posts_and_reports(thread_id, 100)
+    posts, price_reports = forum_service.get_forum_posts_and_reports(thread_id, 1)
     print(f'posts: {len(posts)}, price reports: {len(price_reports)}')
     print(f'runtime: {time() - start}\n')
 
