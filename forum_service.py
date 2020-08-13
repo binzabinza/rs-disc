@@ -34,7 +34,7 @@ class ForumService:
         scraped_time = str(dt.now())
 
         posts = []
-        with ThreadPoolExecutor(max_workers=12) as executor:
+        with ThreadPoolExecutor(max_workers=24) as executor:
             processes = {
                 executor.submit(self.scraper.scrape_page, page_number) : page_number
                 for page_number in range(page_start, page_end)

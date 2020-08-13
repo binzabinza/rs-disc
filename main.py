@@ -41,7 +41,9 @@ for url, last_page_num, last_post_num, thread_id in active_threads:
 
 csv = ''
 for rep in total_reports:
-    csv_string = '{time}, {type_}, {item_id}, {price}\n'.format(
+    csv_string = '{page}, {post}, {time}, {type_}, {item_id}, {price}\n'.format(
+        page = rep.page_id,
+        post = rep.post_id,
         time = rep.time,
         type_ = rep.transaction_type,
         item_id = rep.item_id,
