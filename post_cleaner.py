@@ -3,7 +3,7 @@ import re
 
 from Models.forum_post_model import ForumPostModel
 from Models.price_report_model import PriceReportModel
-from Items.items import all_items
+from Items.Items import all_items
 
 class PostCleaner:
 

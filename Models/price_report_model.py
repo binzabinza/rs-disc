@@ -47,6 +47,12 @@ class PriceReportModel:
         obj = cls(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
         return obj
     
+    def identifier(self):
+        """
+            returns the identifying numbers for the post
+        """
+        return (self.item_id, self.thread_id, self.page_id, self.post_id)
+
     def __str__(self):
         meta  = "Post #{}.{}.{}".format(self.thread_id, self.page_id, self.post_id)
         report  = "{} {}  - {}".format(self.transaction_type, self.price, self.time)

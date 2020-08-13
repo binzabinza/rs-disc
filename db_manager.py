@@ -98,11 +98,32 @@ class DBManager:
         successful = len(forum_posts) - conflict_count
         return successful, conflict_count
 
-    def insert_price_reports(self):
+    def insert_price_reports(self, reports, force=False):
         """
         This will eventually replace the insert_raw_posts methods by storing cleaned information
         """
-        pass
+        cursor = self.db_connection.cursor()
+        sql_command = "INSERT INTO price_reports (item_id, transaction_type, value, time, thread_id, page_id, post_id) VALUES (?,?,?,?,?,?,?);"
+        conflict_count = 0
+        #quick line to handle non list imports
+        if type(reports) != list : reports = [reports]
+
+        for report in reports:
+            try:
+                cursor.execute(sql_command, (report.item_id, report.transaction_type, report.price, report.time, report.thread_id, report.page_id, report.post_id))
+            except sqlite3.IntegrityError:
+                conflict_count += 1
+                if (force):
+                    #TODO write update query
+                    if self.debugging : print("overwrite report {}.{}.{}".format(*report.identifier()))
+                else:
+                    if self.debugging : print("already scraped report {}.{}.{}".format(*report.identifier()))
+
+        self.db_connection.commit()
+        cursor.close()
+        successful = len(reports) - conflict_count
+        return successful, conflict_count
+
 
     ##############################
     # change current info (UPDATE)
