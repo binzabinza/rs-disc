@@ -33,6 +33,14 @@ class DBManager:
         cursor.close()
         return forum_posts
 
+    def fetch_price_reports(self, item_id, quant=1):
+        cursor = self.db_connection.cursor()
+        sql_command = "SELECT * FROM price_reports WHERE item_id=? ORDER BY item_id DESC LIMIT ?;"
+        cursor.execute(sql_command, (item_id, quant))
+        price_reports = cursor.fetchall()
+        cursor.close()
+        return price_reports
+
     def generate_link(self, thread_id, page_num, post_num):
         cursor = self.db_connection.cursor()
         sql_command = "SELECT url FROM threads WHERE thread_id=?;"

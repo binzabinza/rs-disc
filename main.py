@@ -22,6 +22,8 @@ for post in posts:
     modeled += PostCleaner.extract_price_reports(ForumPostModel.from_array(post))
 db.insert_price_reports(modeled)
 
+print(db.fetch_price_reports("christmas tree cape"))
+
 ############################
 # SHANE'S PRICE PULLING MAIN
 ############################
