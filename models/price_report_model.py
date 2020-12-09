@@ -24,7 +24,7 @@ class PriceReport(Model):
     price = Column(Integer)
     """The price that was reported"""
 
-    time = Column(DateTime)
+    timestamp = Column(DateTime)
     """Timestamp of the post which contains this price report"""
 
     thread_id = Column(Integer)
