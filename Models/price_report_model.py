@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import Any
+
 class PriceReportModel:
     """
     A model that contains info about a price report.
@@ -6,22 +9,31 @@ class PriceReportModel:
 
     Attributes
     ----------
-    item_id : int 
-        a unique id for the item reported
+    item_id : string 
+        A unique id for the item reported (the name of the item).
     transaction_type : str
-        a str defining the transaction type of the price report (one of: "nib", "nis", "inb", "ins")
+        A str defining the transaction type of the price report (one of: "nib", "nis", "inb", "ins")
     price : int
-        the price that was reported
+        The price that was reported
     time : str
-        the timestamp of the post which contains this price report
+        The timestamp of the post which contains this price report
     thread_id : int
     page_id : int
-        page number in the thread of the post which contains this price report
+        Page number in the thread of the post which contains this price report
     post_id : int
-        the position of the post on the page
+        The position of the post on the page
     """
     
-    def __init__(self, item_id, transaction_type, price, time, thread_id, page_id, post_id):
+    def __init__(
+        self,
+        item_id: str,
+        transaction_type: str,
+        price: int,
+        time: str,
+        thread_id: int,
+        page_id: int,
+        post_id: int
+    ):
         self.item_id = item_id
         self.transaction_type = transaction_type
         self.price = price
@@ -31,10 +43,16 @@ class PriceReportModel:
         self.post_id = post_id
 
     @classmethod
-    def from_array(cls, data):
+    def from_array(cls, data: Any) -> PriceReportModel:
         obj = cls(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
         return obj
     
+    def identifier(self):
+        """
+            returns the identifying numbers for the post
+        """
+        return (self.item_id, self.thread_id, self.page_id, self.post_id)
+
     def __str__(self):
         meta  = "Post #{}.{}.{}".format(self.thread_id, self.page_id, self.post_id)
         report  = "{} {}  - {}".format(self.transaction_type, self.price, self.time)

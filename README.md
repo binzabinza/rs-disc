@@ -41,7 +41,7 @@ CREATE TABLE forum_posts (thread_id INTEGER, page_num INTEGER, post_num INTEGER,
 | page_id           | integer      |
 | post_id           | integer      |
 
-CREATE TABLE price_reports (item_id INTEGER, transaction_type TEXT, value REAL, time TEXT, thread_id INTEGER, page_id INTEGER, post_id INTEGER, FOREIGN KEY(item_id) REFERENCES items(item_id), FOREIGN KEY(thread_id) REFERENCES threads(thread_id));
+CREATE TABLE price_reports (item_id INTEGER, transaction_type TEXT, value REAL, time TEXT, thread_id INTEGER, page_id INTEGER, post_id INTEGER, FOREIGN KEY(item_id) REFERENCES items(item_id), FOREIGN KEY(thread_id) REFERENCES threads(thread_id), CONSTRAINT u_reports UNIQUE(item_id, transaction_type, thread_id, page_id, post_id));
 
 #### item_lookup
 | Column Name       |   Data Type  |

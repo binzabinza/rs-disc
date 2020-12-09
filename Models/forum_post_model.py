@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import Any
+
 class ForumPostModel:
     """
     A model that contains info about a forum post.
@@ -24,18 +27,28 @@ class ForumPostModel:
         the raw timestamp as it was posted
     """
 
-    def __init__(self, thread_id, page_num, post_num, username, post_body, timestamp, edit_timestamp, scraped_timestamp):
-        self.thread_id         = thread_id
-        self.page_num          = page_num
-        self.post_num          = post_num
-        self.username          = username
-        self.post_body         = post_body
-        self.timestamp         = timestamp
-        self.edit_timestamp    = edit_timestamp
+    def __init__(
+        self,
+        thread_id: int,
+        page_num: int,
+        post_num: int,
+        username: str,
+        post_body: str,
+        timestamp: str,
+        edit_timestamp: str,
+        scraped_timestamp: str
+    ):
+        self.thread_id = thread_id
+        self.page_num = page_num
+        self.post_num = post_num
+        self.username = username
+        self.post_body = post_body
+        self.timestamp = timestamp
+        self.edit_timestamp = edit_timestamp
         self.scraped_timestamp = scraped_timestamp
     
     @classmethod
-    def from_array(cls, data):
+    def from_array(cls, data: Any) -> ForumPostModel:
         obj = cls(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7])
         return obj
     
