@@ -14,5 +14,6 @@ from datetime import datetime
 import ptpython.repl as pt
 
 
-sys.exit(pt.embed(globals(), locals(), configure=config.configure))
+history = os.path.expanduser("~/Library/Application Support/ptpython/history")
+sys.exit(pt.embed(globals(), locals(), configure=config.configure, history_filename=history))
 
