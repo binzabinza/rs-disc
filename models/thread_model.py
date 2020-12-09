@@ -10,7 +10,7 @@ class ForumThread(Model):
 
     __tablename__ = "forum_threads"
 
-    thread_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     url = Column(String)
     last_page_num = Column(Integer)
     last_post_num = Column(Integer)
