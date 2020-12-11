@@ -16,3 +16,6 @@ __pycache__/
 
 # Log Files
 rs3-items.log
+
+# Local Database File Backups
+backups

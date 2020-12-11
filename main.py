@@ -1,27 +1,33 @@
+from sqlalchemy.exc import IntegrityError
 from forum_service import ForumService
-from db_manager import DBManager
-from Models.forum_post_model import ForumPostModel
-from post_cleaner import PostCleaner
+from models import *
+import db_manager as db
+from utilities import log_manager
 
-from time import time
+log = log_manager.get_logger('RS3RareItemPrices.main')
 
-# initialize our classes
-db = DBManager(debugging=True)
 
-#url1 = "https://secure.runescape.com/m=forum/a=23/c=Yaws3WNAKrQ/forums?17,18,741,66165612,goto,{}"
-url1 = "https://secure.runescape.com/m=forum/a=23/c=Yaws3WNAKrQ/forums?17,18,398,66147587,goto,{}"
-db.track_new_thread(url1)
+# track thread
+try:
+    with db.session_scope() as session:
+        forum_thread_1 = ForumThread(url='https://secure.runescape.com/m=forum/forums?17,18,124,66192404,goto,{}')
+        session.merge(forum_thread_1)
+except IntegrityError:
+    log.info('thread already tracked')
 
-# url2 = "https://services.runescape.com/m=forum/sl=0/forums?17,18,769,66133050,goto,{}"
-# db.track_new_thread(url2)
 
-posts = db.fetch_forum_posts(1, 50)
-modeled = []
-for post in posts:
-    modeled += PostCleaner.extract_price_reports(ForumPostModel.from_array(post))
-db.insert_price_reports(modeled)
+# get posts/reports from first active thread
+with db.session_scope() as session:
+    thread1 = ForumThread.fetch_where(session=session, is_active=True)[0]
 
-print(db.fetch_price_reports("christmas tree cape"))
+    forum_service = ForumService(thread1.url)
+
+    posts, reports = forum_service.get_forum_posts_and_reports(thread1.id, page_start=thread1.last_page_num)
+    session.add_all(posts)
+    session.add_all(reports)
+
+
+
 
 ############################
 # SHANE'S PRICE PULLING MAIN

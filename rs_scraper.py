@@ -1,8 +1,11 @@
 import requests
 from lxml import html
 from typing import List, Tuple
-
 import time
+
+from utilities import log_manager
+
+log = log_manager.get_logger('RS3ItemPrices.RSScraper')
 
 class RSScraper:
     """
@@ -35,12 +38,13 @@ class RSScraper:
         """
 
         if tries_left <= 0:
-            print(f'ERROR: Failed to create tree for html on page {page_num}')
+            log.warning(f'Could not generate tree for page_num: {page_num}')
             return None
 
         response = requests.get(
             self.thread_url.format(page_num),
-            headers={'content-type' : 'application/json'}
+            # headers={'content-type': 'application/json'}
+            headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
         )
 
         if response.status_code != 200:
@@ -137,4 +141,7 @@ class RSScraper:
             The page number of the last page of this thread.
         """
         tree = self.__create_tree(1)
+        if not tree:
+            log.error('tree could not be created for forum page. terminating.')
+            exit(-1)
         return int(tree.xpath('//a[@class="forum-pagination__top-last"]//text()')[0])

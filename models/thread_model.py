@@ -11,9 +11,9 @@ class ForumThread(Model):
     __tablename__ = "forum_threads"
 
     id = Column(Integer, primary_key=True)
-    url = Column(String)
-    last_page_num = Column(Integer)
-    last_post_num = Column(Integer)
+    url = Column(String, unique=True)
+    last_page_num = Column(Integer, default=1)
+    last_post_num = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
 
     posts = relationship('ForumPost', back_populates='thread')
