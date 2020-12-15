@@ -141,7 +141,8 @@ class RSScraper:
             The page number of the last page of this thread.
         """
         tree = self.__create_tree(1)
-        if not tree:
+        # if not tree:
+        if len(tree) < 1:
             log.error('tree could not be created for forum page. terminating.')
             exit(-1)
         return int(tree.xpath('//a[@class="forum-pagination__top-last"]//text()')[0])
